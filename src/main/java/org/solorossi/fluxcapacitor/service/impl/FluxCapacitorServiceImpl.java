@@ -1,16 +1,22 @@
 package org.solorossi.fluxcapacitor.service.impl;
 
 import org.apache.commons.lang3.StringUtils;
+import org.solorossi.fluxcapacitor.dto.OffsetRequest;
+import org.solorossi.fluxcapacitor.dto.OffsetResponse;
 import org.solorossi.fluxcapacitor.dto.TimestampRequest;
 import org.solorossi.fluxcapacitor.dto.TimestampResponse;
 import org.solorossi.fluxcapacitor.service.FluxCapacitorService;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 @Service
 public class FluxCapacitorServiceImpl implements FluxCapacitorService {
@@ -21,6 +27,8 @@ public class FluxCapacitorServiceImpl implements FluxCapacitorService {
         if ( StringUtils.isBlank( timestampRequest.timestamp() ) ) {
             errors.reject( "timestamp.request.timestamp.required" );
         }
+
+        // TODO more validation
 
         if ( errors.hasErrors() ) {
             return null;
@@ -43,5 +51,56 @@ public class FluxCapacitorServiceImpl implements FluxCapacitorService {
         }
 
         return new TimestampResponse( targetTimeString );
+    }
+
+    @Override
+    public OffsetResponse timeZoneDifference( OffsetRequest offsetRequest, Errors errors ) {
+
+        // TODO request validation
+
+        if ( errors.hasErrors() ) {
+            return null;
+        }
+
+        String timestamp;
+        String sourceOffset;
+        String destinationOffset;
+        long secondsDifference;
+        long hoursDifference;
+
+        try {
+            // Get the time zones.
+            ZoneId sourceZone = ZoneId.of( offsetRequest.sourceTimeZone() );
+            ZoneId targetZone = ZoneId.of( offsetRequest.destinationTimeZone() );
+
+            // Use a specific reference instant (e.g., right now)
+            // Ignore nanoseconds
+            Instant now = Instant.now().truncatedTo( ChronoUnit.SECONDS );
+            ZonedDateTime dateTime = now.atZone( ZoneOffset.UTC );
+            timestamp = dateTime.toString();
+
+            // Get the specific rules and offsets for that instant
+            ZoneOffset sourceZoneOffset = sourceZone.getRules().getOffset( now );
+            ZoneOffset targetZoneOffset = targetZone.getRules().getOffset( now );
+
+            // Pretty-print the offsets
+            sourceOffset = sourceZoneOffset.toString();
+            destinationOffset = targetZoneOffset.toString();
+
+            // Calculate the difference in seconds
+            secondsDifference = Math.abs( sourceZoneOffset.getTotalSeconds() - targetZoneOffset.getTotalSeconds() );
+
+            // Convert the raw seconds to a readable Duration
+            Duration duration = Duration.ofSeconds( secondsDifference);
+
+            hoursDifference = duration.toHours();
+
+        }
+        catch ( Exception e ) {
+            errors.reject( "exception.message", new Object[] { e.getMessage() }, null );
+            return null;
+        }
+
+        return new OffsetResponse( timestamp, sourceOffset, destinationOffset, secondsDifference, hoursDifference );
     }
 }

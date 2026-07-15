@@ -1,6 +1,8 @@
 package org.solorossi.fluxcapacitor.rest;
 
 import org.solorossi.fluxcapacitor.dto.ApiResponse;
+import org.solorossi.fluxcapacitor.dto.OffsetRequest;
+import org.solorossi.fluxcapacitor.dto.OffsetResponse;
 import org.solorossi.fluxcapacitor.dto.TimestampRequest;
 import org.solorossi.fluxcapacitor.dto.TimestampResponse;
 import org.solorossi.fluxcapacitor.exception.BusinessErrors;
@@ -41,6 +43,21 @@ public class FluxRestController {
         }
 
         String message = errorMessageService.getMessage("timestamp.conversion.successful");
+        return ResponseEntity.ok( ApiResponse.success( response, message ) );
+    }
+
+    @PostMapping("/timeZoneDifference")
+    public ResponseEntity<ApiResponse<OffsetResponse>> timeZoneDifference( @RequestBody OffsetRequest request ) {
+
+        BusinessErrors errors = new BusinessErrors();
+        OffsetResponse response = fluxCapacitorService.timeZoneDifference( request, errors );
+        if ( errors.hasErrors() ) {
+            String message = errorMessageService.getMessage("time.zone.difference.failed");
+            List<String> errorMessages = errorMessageService.getMessages( errors );
+            return ResponseEntity.badRequest().body( ApiResponse.error( message, errorMessages ) );
+        }
+
+        String message = errorMessageService.getMessage("time.zone.difference.successful");
         return ResponseEntity.ok( ApiResponse.success( response, message ) );
     }
 }
