@@ -4,10 +4,10 @@ import org.solorossi.fluxcapacitor.dto.ApiResponse;
 import org.solorossi.fluxcapacitor.dto.TimestampRequest;
 import org.solorossi.fluxcapacitor.dto.TimestampResponse;
 import org.solorossi.fluxcapacitor.exception.BusinessErrors;
+import org.solorossi.fluxcapacitor.service.ErrorMessageService;
 import org.solorossi.fluxcapacitor.service.FluxCapacitorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,18 +19,14 @@ import java.util.List;
 @RequestMapping( "/api" )
 public class FluxRestController {
 
-    private FluxCapacitorService fluxCapacitorService;
+    FluxCapacitorService fluxCapacitorService;
+    ErrorMessageService errorMessageService;
 
     @Autowired
-    public FluxRestController( FluxCapacitorService fluxCapacitorService ) {
+    public FluxRestController( FluxCapacitorService fluxCapacitorService, ErrorMessageService errorMessageService ) {
 
         this.fluxCapacitorService = fluxCapacitorService;
-    }
-
-    @GetMapping( "/help" )
-    public String getHelp() {
-
-        return "Help";
+        this.errorMessageService = errorMessageService;
     }
 
     @PostMapping( "/convertTimestamp" )
@@ -39,9 +35,12 @@ public class FluxRestController {
         BusinessErrors errors = new BusinessErrors();
         TimestampResponse response = fluxCapacitorService.convertTimestamp( request, errors );
         if ( errors.hasErrors() ) {
-            return ResponseEntity.badRequest().body( ApiResponse.error( "Bad", List.of( "error1" ) ) );
+            String message = errorMessageService.getMessage("timestamp.conversion.failed");
+            List<String> errorMessages = errorMessageService.getMessages( errors );
+            return ResponseEntity.badRequest().body( ApiResponse.error( message, errorMessages ) );
         }
 
-        return ResponseEntity.ok( ApiResponse.success( response, "Good" ) );
+        String message = errorMessageService.getMessage("timestamp.conversion.successful");
+        return ResponseEntity.ok( ApiResponse.success( response, message ) );
     }
 }
