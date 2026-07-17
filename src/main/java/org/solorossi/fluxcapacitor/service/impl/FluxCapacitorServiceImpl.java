@@ -88,7 +88,7 @@ public class FluxCapacitorServiceImpl implements FluxCapacitorService {
         String sourceOffset;
         String destinationOffset;
         long secondsDifference;
-        long hoursDifference;
+        double hoursDifference;
 
         try {
             // Get the time zones.
@@ -115,7 +115,8 @@ public class FluxCapacitorServiceImpl implements FluxCapacitorService {
             // Convert the raw seconds to a readable Duration
             Duration duration = Duration.ofSeconds( secondsDifference );
 
-            hoursDifference = duration.toHours();
+            // Get decimal hours, since Duration.toHours() rounds down.
+            hoursDifference = (double) duration.toMinutes() / Duration.ofHours(1).toMinutes();
 
         }
         catch ( Exception e ) {

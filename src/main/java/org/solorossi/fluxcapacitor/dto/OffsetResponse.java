@@ -4,6 +4,6 @@ public record OffsetResponse( String timestamp,
                               String sourceOffset,
                               String destinationOffset,
                               long differenceInSeconds,
-                              long differenceInHours ) {
+                              double differenceInHours ) {
 
 }
