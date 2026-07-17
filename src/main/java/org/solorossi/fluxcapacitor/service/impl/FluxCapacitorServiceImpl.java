@@ -28,20 +28,31 @@ public class FluxCapacitorServiceImpl implements FluxCapacitorService {
             errors.reject( "timestamp.request.timestamp.required" );
         }
 
-        // TODO more validation
+        if ( StringUtils.isBlank( timestampRequest.sourceTimeZone() ) ) {
+            errors.reject( "flux.request.sourceTimeZone.required" );
+        }
+
+        if ( StringUtils.isBlank( timestampRequest.destinationTimeZone() ) ) {
+            errors.reject( "flux.request.destinationTimeZone.required" );
+        }
 
         if ( errors.hasErrors() ) {
             return null;
         }
 
+        // Handle old, deprecated 2-4 character zone names.
+        String sourceTimeZone =
+                ZoneId.SHORT_IDS.getOrDefault( timestampRequest.sourceTimeZone(), timestampRequest.sourceTimeZone() );
+        String destinationTimeZone = ZoneId.SHORT_IDS.getOrDefault( timestampRequest.destinationTimeZone(),
+                                                                    timestampRequest.destinationTimeZone() );
         String targetTimeString;
 
         try {
             LocalDateTime localDateTime = LocalDateTime.parse( timestampRequest.timestamp() );
-            ZoneId sourceZone = ZoneId.of( timestampRequest.sourceTimeZone() );
+            ZoneId sourceZone = ZoneId.of( sourceTimeZone );
             ZonedDateTime sourceTime = ZonedDateTime.of( localDateTime, sourceZone );
 
-            ZoneId targetZone = ZoneId.of( timestampRequest.destinationTimeZone() );
+            ZoneId targetZone = ZoneId.of( destinationTimeZone );
             ZonedDateTime targetTime = sourceTime.withZoneSameInstant( targetZone );
             targetTimeString = targetTime.format( DateTimeFormatter.ISO_LOCAL_DATE_TIME );
         }
@@ -50,18 +61,29 @@ public class FluxCapacitorServiceImpl implements FluxCapacitorService {
             return null;
         }
 
-        return new TimestampResponse( targetTimeString );
+        return new TimestampResponse( targetTimeString, destinationTimeZone );
     }
 
     @Override
     public OffsetResponse timeZoneDifference( OffsetRequest offsetRequest, Errors errors ) {
 
-        // TODO request validation
+        if ( StringUtils.isBlank( offsetRequest.sourceTimeZone() ) ) {
+            errors.reject( "flux.request.sourceTimeZone.required" );
+        }
+
+        if ( StringUtils.isBlank( offsetRequest.destinationTimeZone() ) ) {
+            errors.reject( "flux.request.destinationTimeZone.required" );
+        }
 
         if ( errors.hasErrors() ) {
             return null;
         }
 
+        // Handle old, deprecated 2-4 character zone names.
+        String sourceTimeZone =
+                ZoneId.SHORT_IDS.getOrDefault( offsetRequest.sourceTimeZone(), offsetRequest.sourceTimeZone() );
+        String destinationTimeZone = ZoneId.SHORT_IDS.getOrDefault( offsetRequest.destinationTimeZone(),
+                                                                    offsetRequest.destinationTimeZone() );
         String timestamp;
         String sourceOffset;
         String destinationOffset;
@@ -70,8 +92,8 @@ public class FluxCapacitorServiceImpl implements FluxCapacitorService {
 
         try {
             // Get the time zones.
-            ZoneId sourceZone = ZoneId.of( offsetRequest.sourceTimeZone() );
-            ZoneId targetZone = ZoneId.of( offsetRequest.destinationTimeZone() );
+            ZoneId sourceZone = ZoneId.of( sourceTimeZone );
+            ZoneId targetZone = ZoneId.of( destinationTimeZone );
 
             // Use a specific reference instant (e.g., right now)
             // Ignore nanoseconds
@@ -91,7 +113,7 @@ public class FluxCapacitorServiceImpl implements FluxCapacitorService {
             secondsDifference = Math.abs( sourceZoneOffset.getTotalSeconds() - targetZoneOffset.getTotalSeconds() );
 
             // Convert the raw seconds to a readable Duration
-            Duration duration = Duration.ofSeconds( secondsDifference);
+            Duration duration = Duration.ofSeconds( secondsDifference );
 
             hoursDifference = duration.toHours();
 

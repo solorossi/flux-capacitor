@@ -37,27 +37,27 @@ public class FluxRestController {
         BusinessErrors errors = new BusinessErrors();
         TimestampResponse response = fluxCapacitorService.convertTimestamp( request, errors );
         if ( errors.hasErrors() ) {
-            String message = errorMessageService.getMessage("timestamp.conversion.failed");
+            String message = errorMessageService.getMessage( "timestamp.conversion.failed" );
             List<String> errorMessages = errorMessageService.getMessages( errors );
             return ResponseEntity.badRequest().body( ApiResponse.error( message, errorMessages ) );
         }
 
-        String message = errorMessageService.getMessage("timestamp.conversion.successful");
+        String message = errorMessageService.getMessage( "timestamp.conversion.successful" );
         return ResponseEntity.ok( ApiResponse.success( response, message ) );
     }
 
-    @PostMapping("/timeZoneDifference")
+    @PostMapping( "/timeZoneDifference" )
     public ResponseEntity<ApiResponse<OffsetResponse>> timeZoneDifference( @RequestBody OffsetRequest request ) {
 
         BusinessErrors errors = new BusinessErrors();
         OffsetResponse response = fluxCapacitorService.timeZoneDifference( request, errors );
         if ( errors.hasErrors() ) {
-            String message = errorMessageService.getMessage("time.zone.difference.failed");
+            String message = errorMessageService.getMessage( "time.zone.difference.failed" );
             List<String> errorMessages = errorMessageService.getMessages( errors );
             return ResponseEntity.badRequest().body( ApiResponse.error( message, errorMessages ) );
         }
 
-        String message = errorMessageService.getMessage("time.zone.difference.successful");
+        String message = errorMessageService.getMessage( "time.zone.difference.successful" );
         return ResponseEntity.ok( ApiResponse.success( response, message ) );
     }
 }

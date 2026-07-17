@@ -13,5 +13,6 @@ public interface ErrorMessageService {
     List<String> getMessages( Errors errors );
 
     String getMessage( String code, Object... arguments );
+
     String getMessage( MessageSourceResolvable error );
 }
