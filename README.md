@@ -28,3 +28,6 @@ and can also be used to experiment with the endpoints. Postman can also be used 
 exercise the service. The OpenAPI v3 JSON docs are also available
 at [this link](http://localhost:8080/v3/api-docs).
 If you like YAML, use [this link](http://localhost:8080/v3/api-docs.yaml).
+## TODO
+- Add Swagger @Schema annotations for more descriptive documentation.
+- Better general exception handling at the ReST controller layer.
