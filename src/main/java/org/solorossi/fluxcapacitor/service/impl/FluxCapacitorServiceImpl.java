@@ -116,7 +116,7 @@ public class FluxCapacitorServiceImpl implements FluxCapacitorService {
             Duration duration = Duration.ofSeconds( secondsDifference );
 
             // Get decimal hours, since Duration.toHours() rounds down.
-            hoursDifference = (double) duration.toMinutes() / Duration.ofHours(1).toMinutes();
+            hoursDifference = (double) duration.toMinutes() / Duration.ofHours( 1 ).toMinutes();
 
         }
         catch ( Exception e ) {
