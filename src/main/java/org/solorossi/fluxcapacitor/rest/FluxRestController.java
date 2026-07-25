@@ -1,5 +1,7 @@
 package org.solorossi.fluxcapacitor.rest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.solorossi.fluxcapacitor.dto.ApiResponse;
 import org.solorossi.fluxcapacitor.dto.OffsetRequest;
 import org.solorossi.fluxcapacitor.dto.OffsetResponse;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Tag( name = "Flux Capacitor", description = "Time zone utilities" )
 @RestController
 @RequestMapping( "/api" )
 public class FluxRestController {
@@ -31,6 +34,7 @@ public class FluxRestController {
         this.errorMessageService = errorMessageService;
     }
 
+    @Operation( summary = "Convert a timestamp with no time zone information from one time zone to another" )
     @PostMapping( "/convertTimestamp" )
     public ResponseEntity<ApiResponse<TimestampResponse>> convertTimestamp( @RequestBody TimestampRequest request ) {
 
@@ -46,6 +50,7 @@ public class FluxRestController {
         return ResponseEntity.ok( ApiResponse.success( response, message ) );
     }
 
+    @Operation( summary = "Calculate the time difference of offsets for two time zones" )
     @PostMapping( "/timeZoneDifference" )
     public ResponseEntity<ApiResponse<OffsetResponse>> timeZoneDifference( @RequestBody OffsetRequest request ) {
 

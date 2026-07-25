@@ -18,6 +18,9 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * This class implements the flux capacitor service layer for time zone request calculations.
+ */
 @Service
 public class FluxCapacitorServiceImpl implements FluxCapacitorService {
 
@@ -48,12 +51,18 @@ public class FluxCapacitorServiceImpl implements FluxCapacitorService {
         String targetTimeString;
 
         try {
+            // Parse the time zone, which has no zone information.
             LocalDateTime localDateTime = LocalDateTime.parse( timestampRequest.timestamp() );
+
+            // Get the source time zone and put the timestamp into that zone.
             ZoneId sourceZone = ZoneId.of( sourceTimeZone );
             ZonedDateTime sourceTime = ZonedDateTime.of( localDateTime, sourceZone );
 
+            // Get the destination time zone and get the same instant in that zone.
             ZoneId targetZone = ZoneId.of( destinationTimeZone );
             ZonedDateTime targetTime = sourceTime.withZoneSameInstant( targetZone );
+
+            // Format the destination time without zone information.
             targetTimeString = targetTime.format( DateTimeFormatter.ISO_LOCAL_DATE_TIME );
         }
         catch ( Exception e ) {

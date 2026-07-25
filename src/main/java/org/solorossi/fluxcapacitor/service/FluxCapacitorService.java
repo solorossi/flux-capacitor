@@ -6,6 +6,9 @@ import org.solorossi.fluxcapacitor.dto.TimestampRequest;
 import org.solorossi.fluxcapacitor.dto.TimestampResponse;
 import org.springframework.validation.Errors;
 
+/**
+ * This interface defines the flux capacitor service for time zone requests.
+ */
 public interface FluxCapacitorService {
 
     TimestampResponse convertTimestamp( TimestampRequest timestampRequest, Errors errors );

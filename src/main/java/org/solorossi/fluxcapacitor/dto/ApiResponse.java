@@ -1,8 +1,23 @@
 package org.solorossi.fluxcapacitor.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.List;
 
-public record ApiResponse<T>( boolean success, T data, String message, List<String> errorMessages ) {
+@Schema( description = "Envelope containing response data or error messages" )
+public record ApiResponse<T>(
+        @Schema( description = "Was the request successful?",
+                 example = "true" )
+        boolean success,
+
+        @Schema( description = "The request-specific response data" )
+        T data,
+
+        @Schema( description = "A summary message for the response" )
+        String message,
+
+        @Schema( description = "Collection of error messages (if any)" )
+        List<String> errorMessages ) {
 
     // Helper method for successful responses
     public static <T> ApiResponse<T> success( T data, String message ) {

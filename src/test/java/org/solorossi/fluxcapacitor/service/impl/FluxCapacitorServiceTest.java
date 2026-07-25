@@ -257,7 +257,7 @@ class FluxCapacitorServiceTest {
         assertEquals( 18000, response.differenceInSeconds() );
         assertEquals( 5, response.differenceInHours() );
 
-        request = new OffsetRequest("UTC-4", "UTC+04:30" );
+        request = new OffsetRequest( "UTC-4", "UTC+04:30" );
         response = fluxCapacitorService.timeZoneDifference( request, errors );
         assertFalse( errors.hasErrors() );
         assertNotNull( response.timestamp() );
@@ -266,16 +266,16 @@ class FluxCapacitorServiceTest {
         assertEquals( 30600, response.differenceInSeconds() );
         assertEquals( 8.5, response.differenceInHours() );
 
-        request = new OffsetRequest("-11", "+5" );
+        request = new OffsetRequest( "-11", "+5" );
         response = fluxCapacitorService.timeZoneDifference( request, errors );
         assertFalse( errors.hasErrors() );
         assertNotNull( response.timestamp() );
         assertEquals( "-11:00", response.sourceOffset() );
         assertEquals( "+05:00", response.destinationOffset() );
-        assertEquals(57600, response.differenceInSeconds() );
+        assertEquals( 57600, response.differenceInSeconds() );
         assertEquals( 16, response.differenceInHours() );
 
-        request = new OffsetRequest("GMT-6", "Z" );
+        request = new OffsetRequest( "GMT-6", "Z" );
         response = fluxCapacitorService.timeZoneDifference( request, errors );
         assertFalse( errors.hasErrors() );
         assertNotNull( response.timestamp() );
@@ -296,7 +296,7 @@ class FluxCapacitorServiceTest {
         assertFalse( errors.hasErrors() );
         assertEquals( "-10:00", response.sourceOffset() );
         assertEquals( "+05:30", response.destinationOffset() );
-        assertEquals(55800, response.differenceInSeconds() );
+        assertEquals( 55800, response.differenceInSeconds() );
         assertEquals( 15.5, response.differenceInHours() );
     }
 
@@ -336,7 +336,7 @@ class FluxCapacitorServiceTest {
         assertTrue( errorsContains( errors, "Unknown time-zone ID: central" ) );
 
         errors = new BusinessErrors();
-        request = new OffsetRequest(  "America/Chicago", "pacific" );
+        request = new OffsetRequest( "America/Chicago", "pacific" );
         response = fluxCapacitorService.timeZoneDifference( request, errors );
         assertTrue( errors.hasErrors() );
         assertTrue( errorsContains( errors, "Unknown time-zone ID: pacific" ) );
