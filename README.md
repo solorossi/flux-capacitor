@@ -29,5 +29,8 @@ exercise the service. The OpenAPI v3 JSON docs are also available
 at [this link](http://localhost:8080/v3/api-docs).
 If you like YAML, use [this link](http://localhost:8080/v3/api-docs.yaml).
 ## TODO
-- Add Swagger @Schema annotations for more descriptive documentation.
 - Better general exception handling at the ReST controller layer.
+- Add a call to get time zone IDs.
+- Argument for either popular list or all zones.
+- Add pagination of the result list is long.
+- Add a web controller and home page pointing to the Swagger URLs.
