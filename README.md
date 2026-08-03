@@ -3,6 +3,9 @@
 This repository contains a ReST service that converts timestamps from
 one time zone to another and calculates the offset between time zones.
 
+Additional endpoints can be used to retrieve the list of top-level
+region names or a subset of the available time zone names by region or offset.
+
 This service is useful for environments that don't have access to the
 zone info database, like older versions of Smalltalk, etc.
 
@@ -30,7 +33,6 @@ at [this link](http://localhost:8080/v3/api-docs).
 If you like YAML, use [this link](http://localhost:8080/v3/api-docs.yaml).
 ## TODO
 - Better general exception handling at the ReST controller layer.
-- Add a call to get time zone IDs.
-- Argument for either popular list or all zones.
-- Add pagination of the result list is long.
+- Add pagination if the result list is long.
 - Add a web controller and home page pointing to the Swagger URLs.
+- Test the application in a standalone container (e.g. Tomcat).

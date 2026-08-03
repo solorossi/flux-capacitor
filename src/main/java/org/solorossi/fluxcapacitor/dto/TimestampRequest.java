@@ -18,5 +18,4 @@ public record TimestampRequest(
                  example = "America/New_York",
                  requiredMode = Schema.RequiredMode.REQUIRED )
         String destinationTimeZone ) {
-
 }

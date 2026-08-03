@@ -11,5 +11,4 @@ public record TimestampResponse(
         @Schema( description = "Desired time zone",
                  example = "America/New_York" )
         String destinationTimeZone ) {
-
 }

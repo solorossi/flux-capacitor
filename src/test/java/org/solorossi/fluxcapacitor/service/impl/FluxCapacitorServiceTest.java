@@ -3,6 +3,10 @@ package org.solorossi.fluxcapacitor.service.impl;
 import org.junit.jupiter.api.Test;
 import org.solorossi.fluxcapacitor.dto.OffsetRequest;
 import org.solorossi.fluxcapacitor.dto.OffsetResponse;
+import org.solorossi.fluxcapacitor.dto.RegionRequest;
+import org.solorossi.fluxcapacitor.dto.RegionResponse;
+import org.solorossi.fluxcapacitor.dto.TimeZoneRequest;
+import org.solorossi.fluxcapacitor.dto.TimeZoneResponse;
 import org.solorossi.fluxcapacitor.dto.TimestampRequest;
 import org.solorossi.fluxcapacitor.dto.TimestampResponse;
 import org.solorossi.fluxcapacitor.exception.BusinessErrors;
@@ -15,11 +19,13 @@ import org.springframework.validation.Errors;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -113,6 +119,7 @@ class FluxCapacitorServiceTest {
         TimestampRequest request = new TimestampRequest( null, null, null );
         TimestampResponse response = fluxCapacitorService.convertTimestamp( request, errors );
         assertTrue( errors.hasErrors() );
+        assertNull( response );
         // Make sure all errors are returned in one shot.
         assertTrue( errorsContains( errors, "A timestamp is required." ) );
         assertTrue( errorsContains( errors, "A source time zone is required." ) );
@@ -122,6 +129,7 @@ class FluxCapacitorServiceTest {
         request = new TimestampRequest( "", "", "" );
         response = fluxCapacitorService.convertTimestamp( request, errors );
         assertTrue( errors.hasErrors() );
+        assertNull( response );
         assertTrue( errorsContains( errors, "A timestamp is required." ) );
         assertTrue( errorsContains( errors, "A source time zone is required." ) );
         assertTrue( errorsContains( errors, "A destination time zone is required." ) );
@@ -130,6 +138,7 @@ class FluxCapacitorServiceTest {
         request = new TimestampRequest( "    ", " ", "     " );
         response = fluxCapacitorService.convertTimestamp( request, errors );
         assertTrue( errors.hasErrors() );
+        assertNull( response );
         assertTrue( errorsContains( errors, "A timestamp is required." ) );
         assertTrue( errorsContains( errors, "A source time zone is required." ) );
         assertTrue( errorsContains( errors, "A destination time zone is required." ) );
@@ -144,24 +153,28 @@ class FluxCapacitorServiceTest {
                 new TimestampRequest( "2026-09-22X18:00:00", "America/Chicago", "America/Los_Angeles" );
         TimestampResponse response = fluxCapacitorService.convertTimestamp( request, errors );
         assertTrue( errors.hasErrors() );
+        assertNull( response );
         assertTrue( errorsContains( errors, "'2026-09-22X18:00:00' could not be parsed" ) );
 
         errors = new BusinessErrors();
         request = new TimestampRequest( "2026-09-22T18", "America/Chicago", "America/Los_Angeles" );
         response = fluxCapacitorService.convertTimestamp( request, errors );
         assertTrue( errors.hasErrors() );
+        assertNull( response );
         assertTrue( errorsContains( errors, "'2026-09-22T18' could not be parsed" ) );
 
         errors = new BusinessErrors();
         request = new TimestampRequest( "234278634T75", "America/Chicago", "America/Los_Angeles" );
         response = fluxCapacitorService.convertTimestamp( request, errors );
         assertTrue( errors.hasErrors() );
+        assertNull( response );
         assertTrue( errorsContains( errors, "'234278634T75' could not be parsed" ) );
 
         errors = new BusinessErrors();
         request = new TimestampRequest( "timestamp", "America/Chicago", "America/Los_Angeles" );
         response = fluxCapacitorService.convertTimestamp( request, errors );
         assertTrue( errors.hasErrors() );
+        assertNull( response );
         assertTrue( errorsContains( errors, "'timestamp' could not be parsed" ) );
     }
 
@@ -173,18 +186,21 @@ class FluxCapacitorServiceTest {
                 new TimestampRequest( "2026-09-22T18:00:00", "central", "pacific" );
         TimestampResponse response = fluxCapacitorService.convertTimestamp( request, errors );
         assertTrue( errors.hasErrors() );
+        assertNull( response );
         assertTrue( errorsContains( errors, "Unknown time-zone ID: central" ) );
 
         errors = new BusinessErrors();
         request = new TimestampRequest( "2026-09-22T18:00:00", "America/Chicago", "pacific" );
         response = fluxCapacitorService.convertTimestamp( request, errors );
         assertTrue( errors.hasErrors() );
+        assertNull( response );
         assertTrue( errorsContains( errors, "Unknown time-zone ID: pacific" ) );
 
         errors = new BusinessErrors();
         request = new TimestampRequest( "2026-09-22T18:00:00", "America/Chicago", "EDT" );
         response = fluxCapacitorService.convertTimestamp( request, errors );
         assertTrue( errors.hasErrors() );
+        assertNull( response );
         assertTrue( errorsContains( errors, "Unknown time-zone ID: EDT" ) );
     }
 
@@ -301,12 +317,14 @@ class FluxCapacitorServiceTest {
     }
 
     // Test with blank/empty/null input strings.
+    @Test
     void testDifferenceWithEmptyInput() {
 
         BusinessErrors errors = new BusinessErrors();
         OffsetRequest request = new OffsetRequest( null, null );
         OffsetResponse response = fluxCapacitorService.timeZoneDifference( request, errors );
         assertTrue( errors.hasErrors() );
+        assertNull( response );
         // Make sure all errors are returned in one shot.
         assertTrue( errorsContains( errors, "A source time zone is required." ) );
         assertTrue( errorsContains( errors, "A destination time zone is required." ) );
@@ -315,6 +333,7 @@ class FluxCapacitorServiceTest {
         request = new OffsetRequest( "", "" );
         response = fluxCapacitorService.timeZoneDifference( request, errors );
         assertTrue( errors.hasErrors() );
+        assertNull( response );
         assertTrue( errorsContains( errors, "A source time zone is required." ) );
         assertTrue( errorsContains( errors, "A destination time zone is required." ) );
 
@@ -322,6 +341,7 @@ class FluxCapacitorServiceTest {
         request = new OffsetRequest( "  ", "      " );
         response = fluxCapacitorService.timeZoneDifference( request, errors );
         assertTrue( errors.hasErrors() );
+        assertNull( response );
         assertTrue( errorsContains( errors, "A source time zone is required." ) );
         assertTrue( errorsContains( errors, "A destination time zone is required." ) );
     }
@@ -333,19 +353,164 @@ class FluxCapacitorServiceTest {
         OffsetRequest request = new OffsetRequest( "central", "pacific" );
         OffsetResponse response = fluxCapacitorService.timeZoneDifference( request, errors );
         assertTrue( errors.hasErrors() );
+        assertNull( response );
         assertTrue( errorsContains( errors, "Unknown time-zone ID: central" ) );
 
         errors = new BusinessErrors();
         request = new OffsetRequest( "America/Chicago", "pacific" );
         response = fluxCapacitorService.timeZoneDifference( request, errors );
         assertTrue( errors.hasErrors() );
+        assertNull( response );
         assertTrue( errorsContains( errors, "Unknown time-zone ID: pacific" ) );
 
         errors = new BusinessErrors();
         request = new OffsetRequest( "America/Chicago", "EDT" );
         response = fluxCapacitorService.timeZoneDifference( request, errors );
         assertTrue( errors.hasErrors() );
+        assertNull( response );
         assertTrue( errorsContains( errors, "Unknown time-zone ID: EDT" ) );
+    }
+
+    @Test
+    void testGetTimeZoneRegions() {
+
+        final List<String> STANDARD_REGIONS = List.of( "America", "Europe", "Etc", "SystemV", "US" );
+        final List<String> ALTERNATE_REGIONS = List.of( "CST6CDT", "GMT", "NZ", "UTC", "Zulu" );
+
+        BusinessErrors errors = new BusinessErrors();
+        RegionRequest request = new RegionRequest( false, false );
+        RegionResponse response = fluxCapacitorService.getTimeZoneRegions( request, errors );
+        assertFalse( errors.hasErrors() );
+        assertTrue( response.regions().containsAll( STANDARD_REGIONS ) );
+        assertTrue( Collections.disjoint( response.regions(), ALTERNATE_REGIONS ) );
+
+        errors = new BusinessErrors();
+        request = new RegionRequest( true, false );
+        response = fluxCapacitorService.getTimeZoneRegions( request, errors );
+        assertFalse( errors.hasErrors() );
+        assertTrue( response.regions().containsAll( STANDARD_REGIONS ) );
+        assertTrue( response.regions().containsAll( ALTERNATE_REGIONS ) );
+
+        errors = new BusinessErrors();
+        request = new RegionRequest( false, true );
+        response = fluxCapacitorService.getTimeZoneRegions( request, errors );
+        assertFalse( errors.hasErrors() );
+        assertTrue( Collections.disjoint( response.regions(), STANDARD_REGIONS ) );
+        assertTrue( response.regions().containsAll( ALTERNATE_REGIONS ) );
+
+        errors = new BusinessErrors();
+        request = new RegionRequest( true, true );
+        response = fluxCapacitorService.getTimeZoneRegions( request, errors );
+        assertFalse( errors.hasErrors() );
+        assertTrue( Collections.disjoint( response.regions(), STANDARD_REGIONS ) );
+        assertTrue( response.regions().containsAll( ALTERNATE_REGIONS ) );
+    }
+
+    @Test
+    void testGetAllTimeZones() {
+
+        BusinessErrors errors = new BusinessErrors();
+        TimeZoneRequest request = new TimeZoneRequest( null, null );
+        TimeZoneResponse response = fluxCapacitorService.getTimeZones( request, errors );
+        assertFalse( errors.hasErrors() );
+        assertFalse( response.timeZones().isEmpty() );
+        // Check that the time zone list is formatted to contain both names and offsets.
+        assertTrue( listContains( response.timeZones(), "Africa/Tunis" ) );
+        assertTrue( listContains( response.timeZones(), "(-10:00)" ) );
+        assertTrue( response.timeZones().contains( "(+00:00) UTC" ) );
+    }
+
+    @Test
+    void testGetTimeZonesForRegion() {
+
+        BusinessErrors errors = new BusinessErrors();
+        TimeZoneRequest request = new TimeZoneRequest( "America", null );
+        TimeZoneResponse response = fluxCapacitorService.getTimeZones( request, errors );
+        assertFalse( errors.hasErrors() );
+        assertFalse( response.timeZones().isEmpty() );
+        assertTrue( response.timeZones().stream().allMatch( s -> s.contains( "America" ) ) );
+        assertTrue( response.timeZones().stream().noneMatch( s -> s.contains( "Africa" ) ) );
+    }
+
+    @Test
+    void testGetTimeZonesWithBadRegion() {
+
+        BusinessErrors errors = new BusinessErrors();
+        TimeZoneRequest request = new TimeZoneRequest( "region", null );
+        TimeZoneResponse response = fluxCapacitorService.getTimeZones( request, errors );
+        assertFalse( errors.hasErrors() );
+        assertNotNull( response.timestamp() );
+        assertTrue( response.timeZones().isEmpty() );
+    }
+
+    @Test
+    void testGetTimeZonesForOffset() {
+
+        BusinessErrors errors = new BusinessErrors();
+        TimeZoneRequest request = new TimeZoneRequest( null, "-4" );
+        TimeZoneResponse response = fluxCapacitorService.getTimeZones( request, errors );
+        assertFalse( errors.hasErrors() );
+        assertFalse( response.timeZones().isEmpty() );
+        assertTrue( response.timeZones().stream().allMatch( s -> s.contains( "-04:00" ) ) );
+        assertTrue( response.timeZones().stream().noneMatch( s -> s.contains( "+05:00" ) ) );
+    }
+
+    @Test
+    void testGetTimeZonesWithBadOffset() {
+
+        BusinessErrors errors = new BusinessErrors();
+        TimeZoneRequest request = new TimeZoneRequest( null, "-22" );
+        TimeZoneResponse response = fluxCapacitorService.getTimeZones( request, errors );
+        assertTrue( errors.hasErrors() );
+        assertNull( response );
+        assertTrue( errorsContains( errors, "hours not in valid range" ) );
+
+        errors = new BusinessErrors();
+        request = new TimeZoneRequest( null, "=04" );
+        response = fluxCapacitorService.getTimeZones( request, errors );
+        assertTrue( errors.hasErrors() );
+        assertNull( response );
+        assertTrue( errorsContains( errors, "invalid format" ) );
+
+        errors = new BusinessErrors();
+        request = new TimeZoneRequest( null, "abc" );
+        response = fluxCapacitorService.getTimeZones( request, errors );
+        assertTrue( errors.hasErrors() );
+        assertNull( response );
+        assertTrue( errorsContains( errors, "invalid format" ) );
+    }
+
+    @Test
+    void testGetTimeZonesForRegionAndOffset() {
+
+        BusinessErrors errors = new BusinessErrors();
+        TimeZoneRequest request = new TimeZoneRequest( "SystemV", "-04:00" );
+        TimeZoneResponse response = fluxCapacitorService.getTimeZones( request, errors );
+        assertFalse( errors.hasErrors() );
+        assertFalse( response.timeZones().isEmpty() );
+        assertTrue( response.timeZones().stream().allMatch( s -> s.contains( "SystemV" ) ) );
+        assertTrue( response.timeZones().stream().allMatch( s -> s.contains( "-04:00" ) ) );
+        assertTrue( response.timeZones().stream().noneMatch( s -> s.contains( "Africa" ) ) );
+        assertTrue( response.timeZones().stream().noneMatch( s -> s.contains( "+05:00" ) ) );
+    }
+
+    @Test
+    void testGetTimeZonesWithEasyFixes() {
+
+        BusinessErrors errors = new BusinessErrors();
+        TimeZoneRequest request = new TimeZoneRequest( null, "Z" );
+        TimeZoneResponse response = fluxCapacitorService.getTimeZones( request, errors );
+        assertFalse( errors.hasErrors() );
+        assertFalse( response.timeZones().isEmpty() );
+        assertTrue( response.timeZones().stream().allMatch( s -> s.contains( "+00:00" ) ) );
+        assertTrue( response.timeZones().stream().noneMatch( s -> s.contains( "+05:00" ) ) );
+
+        errors = new BusinessErrors();
+        request = new TimeZoneRequest( null, " 4" );
+        response = fluxCapacitorService.getTimeZones( request, errors );
+        assertFalse( errors.hasErrors() );
+        assertFalse( response.timeZones().isEmpty() );
+        assertTrue( response.timeZones().stream().allMatch( s -> s.contains( "+04:00" ) ) );
     }
 
     // Helper methods that should probably go in a utilities class
@@ -353,10 +518,10 @@ class FluxCapacitorServiceTest {
     private boolean errorsContains( Errors errors, String fragment ) {
 
         List<String> messages = errorMessageService.getMessages( errors );
-        return errorsContains( messages, fragment );
+        return listContains( messages, fragment );
     }
 
-    private boolean errorsContains( List<String> messages, String fragment ) {
+    private boolean listContains( List<String> messages, String fragment ) {
 
         if ( CollectionUtils.isEmpty( messages ) ) {
             return false;

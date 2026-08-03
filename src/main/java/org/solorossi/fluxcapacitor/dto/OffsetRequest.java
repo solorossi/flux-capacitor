@@ -13,5 +13,4 @@ public record OffsetRequest(
                  example = "America/New_York",
                  requiredMode = Schema.RequiredMode.REQUIRED )
         String destinationTimeZone ) {
-
 }

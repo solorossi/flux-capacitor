@@ -3,6 +3,10 @@ package org.solorossi.fluxcapacitor.service.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.solorossi.fluxcapacitor.dto.OffsetRequest;
 import org.solorossi.fluxcapacitor.dto.OffsetResponse;
+import org.solorossi.fluxcapacitor.dto.RegionRequest;
+import org.solorossi.fluxcapacitor.dto.RegionResponse;
+import org.solorossi.fluxcapacitor.dto.TimeZoneRequest;
+import org.solorossi.fluxcapacitor.dto.TimeZoneResponse;
 import org.solorossi.fluxcapacitor.dto.TimestampRequest;
 import org.solorossi.fluxcapacitor.dto.TimestampResponse;
 import org.solorossi.fluxcapacitor.service.FluxCapacitorService;
@@ -17,6 +21,11 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class implements the flux capacitor service layer for time zone request calculations.
@@ -126,7 +135,6 @@ public class FluxCapacitorServiceImpl implements FluxCapacitorService {
 
             // Get decimal hours, since Duration.toHours() rounds down.
             hoursDifference = (double) duration.toMinutes() / Duration.ofHours( 1 ).toMinutes();
-
         }
         catch ( Exception e ) {
             errors.reject( "exception.message", new Object[] { e.getMessage() }, null );
@@ -134,5 +142,124 @@ public class FluxCapacitorServiceImpl implements FluxCapacitorService {
         }
 
         return new OffsetResponse( timestamp, sourceOffset, destinationOffset, secondsDifference, hoursDifference );
+    }
+
+    @Override
+    public RegionResponse getTimeZoneRegions( RegionRequest regionRequest, Errors errors ) {
+
+        List<String> regions;
+
+        try {
+            // Filter out slash zone names if only the alternative names are requested.
+            if ( regionRequest.onlyAlternativeRegions() ) {
+                regions = getAlternativeRegionNames();
+            }
+            else {
+                // Get ZoneIds that have region and location(s) with a slash ("/") in between
+                regions = ZoneId.getAvailableZoneIds().stream()
+                        .filter( id -> id.contains( "/" ) )
+                        .map( id -> id.split( "/", 2 )[0] )
+                        .distinct()
+                        .sorted()
+                        .toList();
+
+                // Optionally add the alternative regions.
+                if ( regionRequest.includeAlternativeRegions() ) {
+                    List<String> alternativeRegions = getAlternativeRegionNames();
+                    regions = Stream.concat( regions.stream(), alternativeRegions.stream() )
+                            .distinct()
+                            .sorted()
+                            .toList();
+                }
+            }
+        }
+        catch ( Exception e ) {
+            errors.reject( "exception.message", new Object[] { e.getMessage() }, null );
+            return null;
+        }
+
+        return new RegionResponse( regions );
+    }
+
+    private List<String> getAlternativeRegionNames() {
+
+        return ZoneId.getAvailableZoneIds().stream()
+                .filter( id -> !id.contains( "/" ) )
+                .distinct()
+                .sorted()
+                .toList();
+    }
+
+    @Override
+    public TimeZoneResponse getTimeZones( TimeZoneRequest timeZoneRequest, Errors errors ) {
+
+        String timestamp;
+        List<String> timeZones;
+
+        try {
+            // Use a specific reference instant (e.g., right now)
+            // Ignore nanoseconds
+            Instant now = Instant.now().truncatedTo( ChronoUnit.SECONDS );
+            ZonedDateTime dateTime = now.atZone( ZoneOffset.UTC );
+            timestamp = dateTime.toString();
+
+            Set<String> availableZoneIds = ZoneId.getAvailableZoneIds();
+
+            // Filter the full set if a region is requested.
+            if ( StringUtils.isNotBlank( timeZoneRequest.region() ) ) {
+                availableZoneIds = availableZoneIds.stream()
+                        .filter( id -> id.startsWith( timeZoneRequest.region() ) )
+                        .collect( Collectors.toSet() );
+            }
+
+            // Filter if a particular offset is requested.
+            if ( StringUtils.isNotBlank( timeZoneRequest.offset() ) ) {
+
+                // Try a few easy fix-ups, otherwise, let the Java Time library do the error processing.
+                String offsetId = timeZoneRequest.offset();
+                char first = offsetId.charAt( 0 );
+                if ( first == 'Z' ) {
+                    offsetId = "+00:00";
+                }
+                else if ( first == ' ' ) {
+                    offsetId = "+" + offsetId.substring( 1 );
+                }
+                else if ( first != '+' && first != '-' ) {
+                    offsetId = "+" + offsetId;
+                }
+                ZoneOffset zoneOffset = ZoneOffset.of( offsetId );
+                availableZoneIds = availableZoneIds.stream()
+                        .filter( id -> now.atZone( ZoneId.of( id ) ).getOffset().equals( zoneOffset ) )
+                        .collect( Collectors.toSet() );
+            }
+
+            // Define a multi-level comparator - first sort by total seconds of the offset, then the zone name.
+            Comparator<ZoneId> zoneComparator = Comparator
+                    .<ZoneId, Integer>comparing( id -> id.getRules().getOffset( now ).getTotalSeconds() )
+                    .thenComparing( ZoneId::getId );
+
+            // Map the filtered zone names to a presentable list.
+            timeZones = availableZoneIds.stream()
+                    .map( ZoneId::of )
+                    .sorted( zoneComparator )
+                    .map( id -> String.format( "(%s) %s", getOffset( now, id ), id.getId() ) )
+                    .toList();
+        }
+        catch ( Exception e ) {
+            errors.reject( "exception.message", new Object[] { e.getMessage() }, null );
+            return null;
+        }
+
+        return new TimeZoneResponse( timestamp, timeZones );
+    }
+
+    // Java represents +00:00 offsets as "Z"; replace it with a value consistent with other offsets.
+    private String getOffset( Instant instant, ZoneId id ) {
+
+        return instant
+                .atZone( id )
+                .getOffset()
+                .getId()
+                .replace( "Z", "+00:00" );
     }
 }

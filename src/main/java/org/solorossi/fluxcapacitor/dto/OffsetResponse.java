@@ -23,5 +23,4 @@ public record OffsetResponse(
         @Schema( description = "Difference between offsets, in hours",
                  example = "10.5" )
         double differenceInHours ) {
-
 }
