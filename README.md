@@ -34,5 +34,4 @@ If you like YAML, use [this link](http://localhost:8080/v3/api-docs.yaml).
 ## TODO
 - Better general exception handling at the ReST controller layer.
 - Add pagination if the result list is long.
-- Add a web controller and home page pointing to the Swagger URLs.
 - Test the application in a standalone container (e.g. Tomcat).
